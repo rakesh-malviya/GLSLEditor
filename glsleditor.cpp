@@ -8,7 +8,13 @@ GLSLEditor::GLSLEditor(QWidget *parent) :
     QHBoxLayout *editorLayout = new QHBoxLayout;
     editorLayout->addWidget(editor);
     this->setLayout(editorLayout);
+
+    signalMapper = new QSignalMapper(this);
+    connect(editor,SIGNAL(textChanged()),signalMapper,SLOT(map()));
+    signalMapper->setMapping(editor,(QObject*)this);
+    connect(signalMapper, SIGNAL(mapped(QObject*)), this, SIGNAL(textChanged(QObject*)));
 }
+
 
 
 void GLSLEditor::setupEditor()
@@ -118,6 +124,7 @@ void GLSLEditor::HandleText(QString mode)
             tc.setPosition(startPos);
             tc.setPosition(endPos, QTextCursor::KeepAnchor);
             editor->setTextCursor(tc);
+            text=editor->toPlainText();
         }
         else if(mode=="DEC")
         {
@@ -135,6 +142,7 @@ void GLSLEditor::HandleText(QString mode)
             tc.setPosition(startPos);
             tc.setPosition(endPos, QTextCursor::KeepAnchor);
             editor->setTextCursor(tc);
+            text=editor->toPlainText();
         }
     }
 }

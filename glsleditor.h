@@ -6,15 +6,18 @@
 #include <QSet>
 #include "highlighter.h"
 #include <Qt>
+#include <QSignalMapper>
 
 class GLSLEditor : public QWidget
 {
     Q_OBJECT
 public:
     explicit GLSLEditor(QWidget *parent = 0);
-    
+    QTextEdit *editor;
+    QSignalMapper *signalMapper;
+    QString text;
 signals:
-    
+    void textChanged(QObject* glslwptr);
 public slots:
     void cursorMoveHandle();
 
@@ -24,9 +27,9 @@ private:
 //     void setupFileMenu();
 //     void setupHelpMenu();
 
-     QTextEdit *editor;
+
      Highlighter *highlighter;
-     QString text;    
+
      QSet<int> keysPressed;
 
      void HandleText(QString mode);

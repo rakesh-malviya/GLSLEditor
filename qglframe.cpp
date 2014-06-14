@@ -1,6 +1,7 @@
 #include "qglframe.h"
 
 #include <QResizeEvent>
+#include <QDebug>
 
 QGLFrame::QGLFrame(QWidget *parent) :
     QGLWidget(parent),
@@ -58,6 +59,14 @@ void QGLFrame::nextModel(){
     RenderThread.model+=1;
     if(RenderThread.model>20)
         RenderThread.model=0;
+}
+
+void QGLFrame::handleCodeChange(QObject *glslwptr)
+{
+    this->code=((GLSLEditor*)glslwptr)->editor->toPlainText();
+    stopRenderThread();
+    initRenderThread();
+    RenderThread.doRendering=true;
 }
 
 void QGLFrame::setXRotation(int angle)

@@ -40,6 +40,7 @@ void QGLRenderThread::stop()
 
 void QGLRenderThread::run()
 {
+    qDebug()<<"running";
     GLFrame->makeCurrent();
     GLInit();
     LoadShader("../DistanceField/Basic.vsh", "../DistanceField/Basic.fsh");
@@ -93,6 +94,7 @@ void QGLRenderThread::GLResize(int width, int height)
 
 void QGLRenderThread::paintGL(void)
 {
+    //qDebug()<<"PAinting";
     ShaderProgram->setUniformValue("timerCount",timerCount);
     ShaderProgram->setUniformValue("modelNo",model);
 
@@ -147,6 +149,35 @@ void QGLRenderThread::paintGL(void)
 
 }
 
+void QGLRenderThread::sleepOne()
+{
+    this->sleep(1);
+}
+
+void QGLRenderThread::updateFragShader(QString code)
+{
+    GLInit();
+    if(FragmentShader)
+        {
+        delete FragmentShader;
+        FragmentShader = NULL;
+        }
+
+    FragmentShader = new QGLShader(QGLShader::Fragment);
+
+    if(FragmentShader->compileSourceFile("../DistanceField/Basic.fsh"))
+        ShaderProgram->addShader(FragmentShader);
+    else qWarning() << "Fragment Shader compile Error" << FragmentShader->log();
+
+
+
+    if(!ShaderProgram->link())
+        {
+        qWarning() << "Shader Program Linker Error" << ShaderProgram->log();
+        }
+    else
+        ShaderProgram->bind();
+}
 
 void QGLRenderThread::LoadShader(QString vshader, QString fshader)
 {
@@ -185,15 +216,29 @@ void QGLRenderThread::LoadShader(QString vshader, QString fshader)
 
 
     // load and compile fragment shader
-    QFileInfo fsh(fshader);
-    if(fsh.exists())
-        {
+    if(GLFrame->code.isEmpty())
+    {
+        qDebug()<<"No code reading from file!";
+        QFileInfo fsh(fshader);
+        if(fsh.exists())
+            {
+            FragmentShader = new QGLShader(QGLShader::Fragment);
+            if(FragmentShader->compileSourceFile(fshader))
+                ShaderProgram->addShader(FragmentShader);
+            else qWarning() << "Fragment Shader Error" << FragmentShader->log();
+            }
+        else qWarning() << "Fragment Shader source file " << fshader << " not found.";
+    }
+    else
+    {
+        qDebug()<<"code reading";
+        qDebug()<<GLFrame->code;
         FragmentShader = new QGLShader(QGLShader::Fragment);
-        if(FragmentShader->compileSourceFile(fshader))
+        if(FragmentShader->compileSourceCode(GLFrame->code))
             ShaderProgram->addShader(FragmentShader);
         else qWarning() << "Fragment Shader Error" << FragmentShader->log();
-        }
-    else qWarning() << "Fragment Shader source file " << fshader << " not found.";
+
+    }
 
     if(!ShaderProgram->link())
         {

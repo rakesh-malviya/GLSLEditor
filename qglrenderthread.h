@@ -16,7 +16,7 @@ class QGLRenderThread : public QThread
 public:
     explicit QGLRenderThread(QGLFrame *parent = 0);
     void resizeViewport(const QSize &size);
-    void run(void);
+    void run();
     void stop(void);
     void LoadShader(QString vshader, QString fshader);
     void paintGL(void);
@@ -25,13 +25,17 @@ public:
     int zRot;
     int model;
     float timerCount;
+    void sleepOne();
+    bool doRendering;
+    void updateFragShader(QString code);
 protected:
     void GLInit(void);
     void GLResize(int width, int height);
 
 
 private:
-    bool doRendering, doResize;
+
+    bool  doResize;
     int w, h, FrameCounter;
 
     QGLFrame *GLFrame;

@@ -5,6 +5,7 @@
 
 #include <QTimer>
 #include "qglrenderthread.h"
+#include "glsleditor.h"
 
 class QGLFrame : public QGLWidget
 {
@@ -14,6 +15,7 @@ public:
     ~QGLFrame();
     void initRenderThread(void);
     void stopRenderThread(void);
+    QString code;
 
 
 signals:
@@ -27,6 +29,8 @@ public slots:
    void setXRotation(int angle);
    void setYRotation(int angle);
    void setZRotation(int angle);
+   void handleCodeChange(QObject* glslwptr);
+
 
 protected:
     void closeEvent(QCloseEvent *evt);

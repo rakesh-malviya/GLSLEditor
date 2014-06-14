@@ -10,7 +10,7 @@ TARGET = DistanceField
 TEMPLATE = app
 LIBS += -lfreeglut
 
-CONFIG += console
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     qglframe.cpp \
