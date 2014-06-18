@@ -3,9 +3,11 @@
 #include <QGLShader>
 #include <QtOpenGL>
 #include <QFileInfo>
+#include <QFile>
 #include <gl/freeglut.h>
 #include "qglframe.h"
 #include <math.h>
+#include <QByteArray>
 
 static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
 
@@ -23,6 +25,9 @@ QGLRenderThread::QGLRenderThread(QGLFrame *parent) :
     timerCount =0;
     ShaderProgram = NULL;
     VertexShader = FragmentShader = NULL;
+    constFind = NULL;
+    intConstants = NULL;
+    floatConstants = NULL;
 }
 
 void QGLRenderThread::resizeViewport(const QSize &size)
@@ -35,6 +40,7 @@ void QGLRenderThread::resizeViewport(const QSize &size)
 void QGLRenderThread::stop()
 {
     doRendering = false;
+
 }
 
 
@@ -43,7 +49,7 @@ void QGLRenderThread::run()
     qDebug()<<"running";
     GLFrame->makeCurrent();
     GLInit();
-    LoadShader("../DistanceField/Basic.vsh", "../DistanceField/Basic.fsh");
+    LoadShader("../GLSLEditor/Basic.vsh", "../GLSLEditor/Basic.fsh");
 
     while (doRendering)
         {
@@ -92,11 +98,15 @@ void QGLRenderThread::GLResize(int width, int height)
 }
 
 
+
 void QGLRenderThread::paintGL(void)
 {
     //qDebug()<<"PAinting";
     ShaderProgram->setUniformValue("timerCount",timerCount);
     ShaderProgram->setUniformValue("modelNo",model);
+
+    setUniformInt();
+    setUniformFloat();
 
     lightPosition[0]=10.0*sin((double)(zRot*22.0)/(7.0*180.0));
     lightPosition[1]=5.0;
@@ -179,14 +189,305 @@ void QGLRenderThread::updateFragShader(QString code)
         ShaderProgram->bind();
 }
 
+void QGLRenderThread::handleValueChanged(int position, QString mode)
+{
+    bool isInt;
+    int index=findIndex(position,&isInt);
+    if(index!=-1)
+    {
+        if(isInt)
+        {
+            if(mode=="DEC")
+                intConstants[index]-=1;
+            else
+                intConstants[index]+=1;
+            //qDebug()<<"IntValue:"<<intConstants[index];
+        }
+        else
+        {
+            if(mode=="DEC")
+                floatConstants[index]-=0.05;
+            else
+                floatConstants[index]+=0.05;
+            //qDebug()<<"FloatValue:"<<floatConstants[index];
+        }
+    }
+}
+
+int QGLRenderThread::findIndex(int position,bool* isInt)
+{
+    int intStartPos,intEndPos,floatStartPos,floatEndPos;
+    int intStartPosIndex,intEndPosIndex,floatStartPosIndex,floatEndPosIndex;
+    //Binary search to find data at postion in intArray
+    int high=constFind->intArraySize-1;
+    int low=0;
+    int mid=0;
+    while(high>=low)
+    {
+        mid = (low+high)/2;
+        if(constFind->intArray[mid].start == position)
+            break;
+        else if(constFind->intArray[mid].start < position)
+            low = mid+1;
+        else
+            high = mid -1;
+    }
+
+    if(constFind->intArray[mid].start>position && mid!=0)
+        mid--;
+    qDebug() << mid <<" "<<constFind->intArray[mid].data<<" " << position << " " <<constFind->intArray[mid].start;
+    intStartPos = constFind->intArray[mid].start;
+    intStartPosIndex = mid;
+
+    high=constFind->intArraySize-1;
+    low=0;
+    mid=0;
+    while(high>=low)
+    {
+        mid = (low+high)/2;
+        if((constFind->intArray[mid].end+1) == position)
+            break;
+        else if((constFind->intArray[mid].end+1) < position)
+            low = mid+1;
+        else
+            high = mid -1;
+    }
+
+    if((constFind->intArray[mid].end+1) < position  && mid!=(constFind->intArraySize - 1))
+        mid++;
+
+    qDebug() << mid <<" "<<constFind->intArray[mid].data<<" " << position << " " <<(constFind->intArray[mid].end+1);
+    intEndPos = constFind->intArray[mid].end+1;
+    intEndPosIndex = mid;
+
+    if((intEndPosIndex==intStartPosIndex) && (intStartPos <=position) && (intEndPos >= position))
+    {
+        *isInt=true;
+        return intEndPosIndex;
+    }
+
+    //Binary search to find data at postion in floatArray
+    high=constFind->floatArraySize-1;
+    low=0;
+    mid=0;
+    while(high>=low)
+    {
+        mid = (low+high)/2;
+        if(constFind->floatArray[mid].start == position)
+            break;
+        else if(constFind->floatArray[mid].start < position)
+            low = mid+1;
+        else
+            high = mid - 1;
+    }
+
+    if(constFind->floatArray[mid].start>position && mid!=0)
+        mid--;
+
+    qDebug() << mid <<" "<<constFind->floatArray[mid].data<<" " << position << " " <<constFind->floatArray[mid].start;
+    floatStartPos = constFind->floatArray[mid].start;
+    floatStartPosIndex = mid;
+
+
+    high=constFind->floatArraySize-1;
+    low=0;
+    mid=0;
+    while(high>=low)
+    {
+        mid = (low+high)/2;
+        if((constFind->floatArray[mid].end+1) == position && mid!=(constFind->floatArraySize - 1))
+            break;
+        else if((constFind->floatArray[mid].end+1) < position)
+            low = mid+1;
+        else
+            high = mid - 1;
+    }
+
+    if((constFind->floatArray[mid].end+1) < position)
+        mid++;
+    qDebug() << mid <<" "<<constFind->floatArray[mid].data<<" " << position << " " <<constFind->floatArray[mid].end+1;
+    floatEndPos = constFind->floatArray[mid].end+1;
+    floatEndPosIndex = mid;
+
+    if((floatEndPosIndex==floatStartPosIndex) && (floatStartPos <=position) && (floatEndPos >= position))
+    {
+        *isInt=false;
+        return floatEndPosIndex;
+    }
+
+    qDebug() << "___________________________________________________";
+    return -1;
+}
+
+
+void QGLRenderThread::createNewCode(QString code)
+{
+    if(intConstants)
+    {
+        delete intConstants;
+        intConstants = NULL;
+    }
+    intConstants = new int[constFind->intArraySize];
+
+    if(floatConstants)
+    {
+        delete floatConstants;
+        floatConstants = NULL;
+    }
+    floatConstants = new float[constFind->floatArraySize];
+
+
+    //Copy data from constFind->int/floatArray to int/floatConstants
+    //data in int/floatConstants may change
+    //but constFind->int/floatArray will have same unless code is change
+
+    for(int i=0;i<constFind->intArraySize;i++)
+        intConstants[i]=constFind->intArray[i].data;
+
+    for(int i=0;i<constFind->floatArraySize;i++)
+        floatConstants[i]=constFind->floatArray[i].data;
+
+    //Now create the code
+    QString intCode="uniform int ";
+    for(int i=0;i<constFind->intArraySize;i++)
+    {
+        QString constName="intConst";
+        QString intStr;
+        intStr.setNum(i);
+        constName+=intStr;
+        constName.append(',');
+        //qDebug()<<constName;
+        intCode+=constName;
+    }
+    intCode[intCode.length()-1]=';';
+    //qDebug()<<intCode;
+
+    QString floatCode="uniform float ";
+    for(int i=0;i<constFind->floatArraySize;i++)
+    {
+        QString constName="floatConst";
+        QString floatStr;
+        floatStr.setNum(i);
+        constName+=floatStr;
+        constName.append(',');
+        //qDebug()<<constName;
+        floatCode+=constName;
+    }
+    floatCode[floatCode.length()-1]=';';
+    //qDebug()<<floatCode;
+
+    QString mergedConstCode = intCode + "\n" + floatCode;
+
+    //qDebug()<<mergedConstCode;
+
+    int insertPos=0;
+    int offset=0;
+
+    insertPos=code.indexOf(';')+1;
+    code.insert(insertPos,'\n');
+    offset++;
+    code.insert(insertPos+1,mergedConstCode);
+    offset+=mergedConstCode.length();
+//    qDebug() << code;
+
+    for(int i=0,j=0;i<constFind->intArraySize||j<constFind->floatArraySize;)
+    {
+        int intStartPoint = constFind->intArray[i].start;
+        int floatStartPoint = constFind->floatArray[j].start;
+
+        if(intStartPoint < floatStartPoint && i < constFind->intArraySize)
+        {
+            int removeLength = constFind->intArray[i].end + 1 - intStartPoint;
+            qDebug()<<"INT "<<constFind->intArray[i].data << "  "<<intStartPoint << "  " << constFind->intArray[i].end<< "  "<<removeLength;
+            code.remove(offset+intStartPoint,removeLength);
+
+            QString constName="intConst";
+            QString intStr;
+            intStr.setNum(i);
+            constName+=intStr;
+            code.insert(offset+intStartPoint,constName);
+            offset+=(constName.length()-removeLength);
+            i++;
+        }
+        else if(j < constFind->floatArraySize)
+        {
+            int removeLength = constFind->floatArray[j].end + 1 - floatStartPoint;
+            qDebug()<<"FLO "<<constFind->floatArray[j].data << "  " << floatStartPoint << "  " << constFind->floatArray[j].end<< "  "<<removeLength;
+            code.remove(offset+floatStartPoint,removeLength);
+            QString constName="floatConst";
+            QString floatStr;
+            floatStr.setNum(j);
+            constName+=floatStr;
+            code.insert(offset+floatStartPoint,constName);
+            offset+=(constName.length()-removeLength);
+            j++;
+        }
+
+    }
+
+    //qDebug() << code;
+
+    fShaderModified = code;
+}
+
+void QGLRenderThread::setUniformFloat()
+{
+    for(int i=0;i<constFind->floatArraySize;i++)
+    {
+        QString constName="floatConst";
+        QString floatStr;
+        floatStr.setNum(i);
+        constName+=floatStr;
+        QByteArray ba = constName.toLocal8Bit();
+        const char* charConstName = ba.data();
+        ShaderProgram->setUniformValue(charConstName,floatConstants[i]);
+    }
+}
+
+void QGLRenderThread::setUniformInt()
+{
+    for(int i=0;i<constFind->intArraySize;i++)
+    {
+        QString constName="intConst";
+        QString intStr;
+        intStr.setNum(i);
+        constName+=intStr;
+        QByteArray ba = constName.toLocal8Bit();
+        const char* charConstName = ba.data();
+        ShaderProgram->setUniformValue(charConstName,intConstants[i]);
+    }
+}
+
+
+
+
 void QGLRenderThread::LoadShader(QString vshader, QString fshader)
 {
+    if(constFind)
+    {
+        delete constFind;
+        constFind=NULL;
+    }
+    QFile fShaderFile(fshader);
+
+    if(fShaderFile.open(QFile::ReadOnly | QFile::Text))
+    {
+        QString code = fShaderFile.readAll();
+        constFind = new ConstantFinder(code);
+        fShaderFile.close();
+        if(constFind)
+        createNewCode(code);
+    }
+
+
+
     if(ShaderProgram)
-        {
+    {
         ShaderProgram->release();
         ShaderProgram->removeAllShaders();
-        }
-    else ShaderProgram = new QGLShaderProgram;
+        ShaderProgram = NULL;
+    }
+    ShaderProgram = new QGLShaderProgram;
 
     if(VertexShader)
         {
@@ -216,7 +517,8 @@ void QGLRenderThread::LoadShader(QString vshader, QString fshader)
 
 
     // load and compile fragment shader
-    if(GLFrame->code.isEmpty())
+//    if(GLFrame->code.isEmpty())
+    if(fShaderModified.isEmpty())
     {
         qDebug()<<"No code reading from file!";
         QFileInfo fsh(fshader);
@@ -232,9 +534,10 @@ void QGLRenderThread::LoadShader(QString vshader, QString fshader)
     else
     {
         qDebug()<<"code reading";
-        qDebug()<<GLFrame->code;
+        //qDebug()<<GLFrame->code;
         FragmentShader = new QGLShader(QGLShader::Fragment);
-        if(FragmentShader->compileSourceCode(GLFrame->code))
+//        if(FragmentShader->compileSourceCode(GLFrame->code))
+        if(FragmentShader->compileSourceCode(fShaderModified))
             ShaderProgram->addShader(FragmentShader);
         else qWarning() << "Fragment Shader Error" << FragmentShader->log();
 

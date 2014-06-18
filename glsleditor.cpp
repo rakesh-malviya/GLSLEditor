@@ -28,11 +28,11 @@ void GLSLEditor::setupEditor()
     editor = new QTextEdit;
     editor->setFont(font);
     editor->setReadOnly(true);
-    connect(editor,SIGNAL(selectionChanged()),this,SLOT(cursorMoveHandle()));
+    //connect(editor,SIGNAL(selectionChanged()),this,SLOT(cursorMoveHandle()));
 
     highlighter = new Highlighter(editor->document());
 
-    QFile file("../DistanceField/Basic.fsh");
+    QFile file("../GLSLEditor/Basic.fsh");
 
     if (file.open(QFile::ReadOnly | QFile::Text))
     {
@@ -43,23 +43,15 @@ void GLSLEditor::setupEditor()
         printf_s("No file :(\n");
 }
 
-void GLSLEditor::cursorMoveHandle()
-{
-    QTextCursor tc = editor->textCursor();
-    //tc.select(QTextCursor::WordUnderCursor);
-    QString word = tc.selectedText();
-    qDebug() << word;
-    qDebug() << tc.position();
-//    tc.removeSelectedText();
-//    editor->insertPlainText("xxx");
-//    QChar c = text.at(tc.position()-1);
-//    qDebug() << c;
-}
+//void GLSLEditor::cursorMoveHandle()
+//{
+//    QTextCursor tc = editor->textCursor();
+//    //tc.select(QTextCursor::WordUnderCursor);
+//    QString word = tc.selectedText();
+//    qDebug() << word;
+//    qDebug() << tc.position();
+//}
 
-void GLSLEditor::mouseMoveEvent ( QMouseEvent * mouseEvent )
-{
-    qDebug()<<mouseEvent->pos();
-}
 
 void GLSLEditor::keyPressEvent ( QKeyEvent * keyEvent )
 {
@@ -68,11 +60,11 @@ void GLSLEditor::keyPressEvent ( QKeyEvent * keyEvent )
 
     if(keysPressed.contains(Qt::Key_Control)&& keysPressed.contains(Qt::Key_Comma))
     {
-        HandleText("DEC");
+        handleValueChange("DEC");
     }
     else if(keysPressed.contains(Qt::Key_Control) && keysPressed.contains(Qt::Key_Period))
     {
-        HandleText("INC");
+        handleValueChange("INC");
     }
 }
 
@@ -101,12 +93,15 @@ void GLSLEditor::HandleText(QString mode)
             qDebug()<<"word after processing:";
             qDebug()<<word;
         }
-        bool converted;
+        bool converted=false;
         float value = word.toFloat(&converted);
         if(converted)
             qDebug()<<value;
         else
+        {
             qDebug()<<"Conversion fail!";
+            return;
+        }
 
         if(mode=="INC")
         {
@@ -146,3 +141,10 @@ void GLSLEditor::HandleText(QString mode)
         }
     }
 }
+
+void GLSLEditor::handleValueChange(QString mode)
+{
+    QTextCursor tc = editor->textCursor();
+    emit sendValueChanged(tc.position(),mode);
+}
+

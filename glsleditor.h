@@ -18,8 +18,9 @@ public:
     QString text;
 signals:
     void textChanged(QObject* glslwptr);
+    void sendValueChanged(int position,QString mode);
 public slots:
-    void cursorMoveHandle();
+//    void cursorMoveHandle();
 
 private:
      void setupEditor();
@@ -33,9 +34,10 @@ private:
      QSet<int> keysPressed;
 
      void HandleText(QString mode);
+     void handleValueChange(QString mode);
 protected:
 
-     void mouseMoveEvent ( QMouseEvent * mouseEvent );
+
      void keyPressEvent ( QKeyEvent * keyEvent );
      void keyReleaseEvent ( QKeyEvent * keyEvent );
 };

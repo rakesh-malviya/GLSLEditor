@@ -61,6 +61,12 @@ void QGLFrame::nextModel(){
         RenderThread.model=0;
 }
 
+void QGLFrame::getValueChanged(int position, QString mode)
+{
+    //qDebug() << "Pos:" << position << "  Mode:" << mode;
+    RenderThread.handleValueChanged(position,mode);
+}
+
 void QGLFrame::handleCodeChange(QObject *glslwptr)
 {
     this->code=((GLSLEditor*)glslwptr)->editor->toPlainText();

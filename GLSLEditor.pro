@@ -16,13 +16,15 @@ SOURCES += main.cpp\
     qglframe.cpp \
     qglrenderthread.cpp \
     glsleditor.cpp \
-    highlighter.cpp
+    highlighter.cpp \
+    constantfinder.cpp
 
 HEADERS  += mainwindow.h \
     qglframe.h \
     qglrenderthread.h \
     glsleditor.h \
-    highlighter.h
+    highlighter.h \
+    constantfinder.h
 
 FORMS    += mainwindow.ui
 

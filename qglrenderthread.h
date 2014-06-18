@@ -5,6 +5,9 @@
 
 #include <QGLWidget>
 
+#include "constantfinder.h"
+#include "utility.h"
+
 class QGLFrame;
 class QSize;
 class QGLShaderProgram;
@@ -14,7 +17,7 @@ class QGLRenderThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit QGLRenderThread(QGLFrame *parent = 0);
+    explicit QGLRenderThread(QGLFrame *parent = 0);    
     void resizeViewport(const QSize &size);
     void run();
     void stop(void);
@@ -27,17 +30,27 @@ public:
     float timerCount;
     void sleepOne();
     bool doRendering;
-    void updateFragShader(QString code);
+    void updateFragShader(QString code);    
+    void handleValueChanged(int position,QString mode);
+    int findIndex(int position,bool* isInt);
+    Utility util;
 protected:
     void GLInit(void);
     void GLResize(int width, int height);
 
 
 private:
+    ConstantFinder* constFind;
+    void createNewCode(QString code);
+    int* intConstants;
+    float* floatConstants;
+
+    void setUniformFloat();
+    void setUniformInt();
 
     bool  doResize;
     int w, h, FrameCounter;
-
+    QString fShaderModified;
     QGLFrame *GLFrame;
 
     QGLShaderProgram *ShaderProgram;

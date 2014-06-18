@@ -15,6 +15,7 @@ public:
     ~QGLFrame();
     void initRenderThread(void);
     void stopRenderThread(void);
+    QGLRenderThread RenderThread;
     QString code;
 
 
@@ -30,13 +31,14 @@ public slots:
    void setYRotation(int angle);
    void setZRotation(int angle);
    void handleCodeChange(QObject* glslwptr);
+   void getValueChanged(int position,QString mode);
 
 
 protected:
     void closeEvent(QCloseEvent *evt);
     void resizeEvent(QResizeEvent *evt);
     void paintEvent(QPaintEvent *);
-    QGLRenderThread RenderThread;
+
 
 private:
     int xRot;

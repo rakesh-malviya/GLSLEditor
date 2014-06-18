@@ -1,5 +1,7 @@
 #version 140
 
+/** text comment
+ in shader **/
 // A quad is uploaded extending from -1 to 1 on both axes
 // The uv variable interpolates between the quad vertices
 smooth in vec2 uv;
@@ -7,12 +9,13 @@ smooth in vec2 uv;
 out vec4 outColor;
 uniform float timerCount;
 uniform int modelNo;
+int modelType=1;
 float g_theta = 0.0f;										// Horizontal angle
 float g_phi = 0.0f;											// Vertical angle
 vec3 g_camUp		= normalize(vec3(0.0f, 1.0f, 0.5f));	// The upward-vector of the image plane
 vec3 g_camRight		= normalize(vec3(1.0f, 0.0f, 0.0f));	// The right-vector of the image plane
 vec3 g_camForward	= cross(g_camRight, g_camUp);			// The forward-vector of the image plane
-vec3 g_eye              = vec3(0, 0.5, -2.0f);				// The eye position in the world
+vec3 g_eye              = vec3(0.0f, 0.5f, -2.0f);				// The eye position in the world
 
 //float sintheta = sin(timerCount);
 //float costheta = cos(timerCount);
@@ -36,8 +39,8 @@ vec4 g_ambient			= vec4(0.15, 0.2f, 0.32f, 1.0f);
 vec3 g_light0Position 	= vec3(0.25f, 2.0f, 0.0f);
 vec4 g_light0Color 		= vec4(0.67f, 0.87f, 0.93f, 1.0f);
 
-uniform float g_windowWidth = 640f;
-uniform float g_windowHeight = 480f;
+float g_windowWidth = 640f;
+float g_windowHeight = 480f;
 float g_aspectRatio = g_windowWidth /g_windowHeight;
 
 
@@ -113,32 +116,32 @@ float distScene(vec3 p)
         p.xz = mod(p.xz, 1.2f) - vec2(0.6f);
 
 //        float changer = sin(timerCount);
-//        if(changer>=0 && changer <0.5)
+//        if(changer>=0.0 && changer <0.5)
 //            return sdBox(p - vec3(0.0f, -0.25f, 0.0f), vec3(0.25f));
 //        else
 //            return sdSphere(p - vec3(0.0f, -0.25f, 0.0f), 0.25f);
 
-        if(modelNo==0)
+        if(modelType==0)
         {
             return sdBox(p - vec3(0.0f, -0.25f, 0.0f), vec3(0.25f));
         }
-        else if(modelNo==1)
+        else if(modelType==1)
         {
             return sdSphere(p - vec3(0.0f, -0.25f, 0.0f), 0.25f);
         }
-        else if(modelNo==2)
+        else if(modelType==2)
         {
             return udBox(p - vec3(0.0f, -0.25f, 0.0f), vec3(0.25f));
         }
-        else if(modelNo==3)
+        else if(modelType==3)
         {
             return udRoundBox(p - vec3(0.0f, -0.25f, 0.0f), vec3(0.25f),0.02f);
         }
-        else if(modelNo==4)
+        else if(modelType==4)
         {
             return sdTorus(p - vec3(0.0f, -0.25f, 0.0f), vec2(0.3f,0.1f));
         }
-        else if(modelNo==5)
+        else if(modelType==5)
         {
              return sdCylinder(p - vec3(0.0f, -0.25f, 0.0f), vec3(0.15f));
         }
