@@ -1,6 +1,7 @@
 #include "glsleditor.h"
 
 #include <QtGui>
+#include <QToolTip>
 GLSLEditor::GLSLEditor(QWidget *parent) :
     QWidget(parent)
 {
@@ -148,3 +149,15 @@ void GLSLEditor::handleValueChange(QString mode)
     emit sendValueChanged(tc.position(),mode);
 }
 
+void GLSLEditor::getValueChangedInfo(int start, int end, float newValueFloat, int newValueInt, bool isInt)
+{
+    QPoint offsetPoint(0,-30);
+    QTextCursor tc = editor->textCursor();
+    QString newWord;
+    if(isInt)
+        newWord= QString::number(newValueInt,10);
+     else
+        newWord= QString::number(newValueFloat,'f',2);
+    QToolTip::showText( this->mapToGlobal(editor->cursorRect().topLeft() + offsetPoint), newWord);
+    qDebug()<<newWord;
+}

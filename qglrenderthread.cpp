@@ -189,7 +189,7 @@ void QGLRenderThread::updateFragShader(QString code)
         ShaderProgram->bind();
 }
 
-void QGLRenderThread::handleValueChanged(int position, QString mode)
+int QGLRenderThread::handleValueChanged(int position, QString mode, int *start, int *end, float *newValueFloat, int *newValueInt, bool *isIntBoolPtr)
 {
     bool isInt;
     int index=findIndex(position,&isInt);
@@ -202,6 +202,11 @@ void QGLRenderThread::handleValueChanged(int position, QString mode)
             else
                 intConstants[index]+=1;
             //qDebug()<<"IntValue:"<<intConstants[index];
+
+            *start = constFind->intArray[index].start;
+            *end   = constFind->intArray[index].end;
+            *newValueInt = intConstants[index];
+            *isIntBoolPtr = true;
         }
         else
         {
@@ -210,8 +215,14 @@ void QGLRenderThread::handleValueChanged(int position, QString mode)
             else
                 floatConstants[index]+=0.05;
             //qDebug()<<"FloatValue:"<<floatConstants[index];
+            *start = constFind->floatArray[index].start;
+            *end   = constFind->floatArray[index].end;
+            *newValueFloat = floatConstants[index];
+            *isIntBoolPtr = false;
         }
     }
+
+    return index;
 }
 
 int QGLRenderThread::findIndex(int position,bool* isInt)
@@ -425,7 +436,7 @@ void QGLRenderThread::createNewCode(QString code)
 
     }
 
-    //qDebug() << code;
+    qDebug() << code;
 
     fShaderModified = code;
 }

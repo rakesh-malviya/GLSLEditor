@@ -108,16 +108,37 @@ ConstantFinder::ConstantFinder(QString textSent)
             else
                 continue;
         }
-        else if(pChar=='-' && !isConst && text.at(i+1).isDigit())
+//        else if(pChar=='-' && !isConst && text.at(i+1).isDigit())
+//        {
+//            if(!(text.at(i-1).isLetter()))
+//            {
+//                startOfData = i;
+//                isConst=true;
+//            }
+//            else
+//                continue;
+//        }
+        else if(pChar=='.' && !isConst && text.at(i+1).isDigit())
         {
             if(!(text.at(i-1).isLetter()))
             {
                 startOfData = i;
                 isConst=true;
+                isFloat = true;
             }
             else
                 continue;
         }
+//        else if(pChar=='-' && !isConst && text.at(i+1)=='.' && text.at(i+2).isDigit() )
+//        {
+//            if(!(text.at(i-1).isLetter()))
+//            {
+//                startOfData = i;
+//                isConst=true;
+//            }
+//            else
+//                continue;
+//        }
 
         if(isConst)
         {

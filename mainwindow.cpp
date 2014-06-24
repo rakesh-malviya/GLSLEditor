@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect(GLFrame, SIGNAL(xRotationChanged(int)), xSlider, SLOT(setValue(int)));
     //connect(ui->editorTab, SIGNAL(textChanged(QObject*)), ui->glWidget, SLOT(handleCodeChange(QObject*)));
     connect(ui->editorTab, SIGNAL(sendValueChanged(int,QString)), ui->glWidget, SLOT(getValueChanged(int,QString)));
+    connect(ui->glWidget,SIGNAL(sendBackValueInfo(int,int,float,int,bool)),ui->editorTab,SLOT(getValueChangedInfo(int,int,float,int,bool)));
 }
 
 MainWindow::~MainWindow()

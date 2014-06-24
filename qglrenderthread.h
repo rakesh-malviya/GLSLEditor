@@ -6,7 +6,7 @@
 #include <QGLWidget>
 
 #include "constantfinder.h"
-#include "utility.h"
+
 
 class QGLFrame;
 class QSize;
@@ -31,9 +31,9 @@ public:
     void sleepOne();
     bool doRendering;
     void updateFragShader(QString code);    
-    void handleValueChanged(int position,QString mode);
+    int handleValueChanged(int position,QString mode,int* start,int* end, float* newValueFloat,int* newValueInt,bool* isInt);
     int findIndex(int position,bool* isInt);
-    Utility util;
+
 protected:
     void GLInit(void);
     void GLResize(int width, int height);

@@ -64,7 +64,16 @@ void QGLFrame::nextModel(){
 void QGLFrame::getValueChanged(int position, QString mode)
 {
     //qDebug() << "Pos:" << position << "  Mode:" << mode;
-    RenderThread.handleValueChanged(position,mode);
+    int start;
+    int end;
+    float newValueFloat;
+    int newValueInt;
+    bool isInt;
+    if(RenderThread.handleValueChanged(position,mode,&start,&end,&newValueFloat,&newValueInt,&isInt)!=-1)
+    {
+        qDebug() << isInt << "  " << QString::number(newValueFloat,'f',2) << "  " << newValueInt;
+        emit sendBackValueInfo(start,end,newValueFloat,newValueInt,isInt);
+    }
 }
 
 void QGLFrame::handleCodeChange(QObject *glslwptr)

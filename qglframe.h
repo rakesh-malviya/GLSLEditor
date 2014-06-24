@@ -23,6 +23,7 @@ signals:
     void xRotationChanged(int angle);
     void yRotationChanged(int angle);
     void zRotationChanged(int angle);
+    void sendBackValueInfo(int start,int end,float newValueFloat,int newValueInt,bool isInt);
 
 public slots:
    void prevModel();
