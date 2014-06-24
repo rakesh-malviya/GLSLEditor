@@ -6,4 +6,5 @@ Hotkeys::
 =========
 
 Ctrl + >  : Increase value of constant under the cursor
+
 Ctrl + <  : Decrease value of constant under the cursor
