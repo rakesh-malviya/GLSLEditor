@@ -161,3 +161,8 @@ void GLSLEditor::getValueChangedInfo(int start, int end, float newValueFloat, in
     QToolTip::showText( this->mapToGlobal(editor->cursorRect().topLeft() + offsetPoint), newWord);
     qDebug()<<newWord;
 }
+
+void GLSLEditor::getCode(QString code)
+{
+    editor->setPlainText(code);
+}

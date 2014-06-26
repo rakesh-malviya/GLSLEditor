@@ -481,15 +481,23 @@ void QGLRenderThread::LoadShader(QString vshader, QString fshader)
     }
     QFile fShaderFile(fshader);
 
-    if(fShaderFile.open(QFile::ReadOnly | QFile::Text))
+    if(GLFrame->code.isEmpty())
     {
-        QString code = fShaderFile.readAll();
-        constFind = new ConstantFinder(code);
-        fShaderFile.close();
-        if(constFind)
-        createNewCode(code);
+        if(fShaderFile.open(QFile::ReadOnly | QFile::Text))
+        {
+            QString code = fShaderFile.readAll();
+            constFind = new ConstantFinder(code);
+            fShaderFile.close();
+            if(constFind)
+                createNewCode(code);
+        }
     }
-
+    else
+    {
+        constFind = new ConstantFinder(GLFrame->code);
+        if(constFind)
+            createNewCode(GLFrame->code);
+    }
 
 
     if(ShaderProgram)

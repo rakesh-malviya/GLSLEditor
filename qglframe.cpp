@@ -2,6 +2,7 @@
 
 #include <QResizeEvent>
 #include <QDebug>
+#include <QFileDialog>
 
 QGLFrame::QGLFrame(QWidget *parent) :
     QGLWidget(parent),
@@ -74,6 +75,24 @@ void QGLFrame::getValueChanged(int position, QString mode)
         qDebug() << isInt << "  " << QString::number(newValueFloat,'f',2) << "  " << newValueInt;
         emit sendBackValueInfo(start,end,newValueFloat,newValueInt,isInt);
     }
+}
+
+void QGLFrame::openFileDialog()
+{
+    QString filePath = QFileDialog::getOpenFileName(this,tr("Fragment Shader File"),"./",tr("Files (*.fsh)"));
+    qDebug()<<filePath;
+    QFile fShaderFile(filePath);
+
+    if(fShaderFile.open(QFile::ReadOnly | QFile::Text))
+    {
+        this->code =  fShaderFile.readAll();
+        stopRenderThread();
+        initRenderThread();
+        RenderThread.doRendering=true;
+        emit sendCode(this->code);
+    }
+    else
+        qDebug() <<"Error unable to open file:" << filePath;
 }
 
 void QGLFrame::handleCodeChange(QObject *glslwptr)

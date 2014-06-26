@@ -54,6 +54,25 @@ ConstantFinder::ConstantFinder(QString textSent)
             {
                 isFloat=true;
             }
+            else if(pChar=='_')
+            {
+                isFloat=false;
+                isConst=false;
+                startOfData = -1;
+                data.clear();
+            }
+            else if((pChar=='e'||pChar=='E') && text.at(i+1).isDigit())
+            {
+                isFloat=true;
+            }
+            else if((pChar=='e'||pChar=='E') && text.at(i+1)=='-')
+            {
+                isFloat=true;
+            }
+            else if(pChar=='-' && (text.at(i-1)=='e' || text.at(i-1)=='E'))
+            {
+                isFloat = true;
+            }
             else if(pChar.isDigit())
             {
 
@@ -100,7 +119,7 @@ ConstantFinder::ConstantFinder(QString textSent)
         }
         else if(pChar.isDigit() && !isConst)
         {
-            if(!(text.at(i-1).isLetter()))
+            if(!(text.at(i-1).isLetter() || text.at(i-1)=='_'))
             {
                 startOfData = i;
                 isConst=true;

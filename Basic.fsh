@@ -4,70 +4,150 @@ uniform float timerCount;
 uniform int modelNo;
 
 vec2 iResolution = vec2(720f,480f);
+vec4 iMouse = vec4(0f,0f,0f,0f);
 float iGlobalTime = timerCount;
 
-float noise(vec3 p) //Thx to Las^Mercury
+
+
+//vec3 hash3( vec2 p )
+//{
+//        // texture based white noise
+//        //return texture2D( iChannel0, (p+0.5)/256.0, -100.0 ).xy;
+
+//    // procedural white noise
+//        return fract(sin(vec3(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)),dot(p,vec2(311.7,127.1))))*43758.5453);
+//}
+// by srtuss, 2013
+// was trying to find some sort of "mechanical" fractal for texture/heightmap
+// generation, but then i ended up with this.
+
+// rotate position around axis
+vec2 rotate(vec2 p, float a)
 {
-        vec3 i = floor(p);
-        vec4 a = dot(i, vec3(1., 57., 21.)) + vec4(0., 57., 21., 78.);
-        vec3 f = cos((p-i)*acos(-1.))*(-.5)+.5;
-        a = mix(sin(cos(a)*a),sin(cos(1.+a)*(1.+a)), f.x);
-        a.xy = mix(a.xz, a.yw, f.y);
-        return mix(a.x, a.y, f.z);
+        return vec2(p.x * cos(a) - p.y * sin(a), p.x * sin(a) + p.y * cos(a));
 }
 
-float sphere(vec3 p, vec4 spr)
+// 1D random numbers
+float rand(float n)
 {
-        return length(spr.xyz-p) - spr.w;
+    return fract(sin(n) * 43758.5453123);
 }
 
-float flame(vec3 p)
+// 2D random numbers
+vec2 rand2(in vec2 p)
 {
-        float d = sphere(p*vec3(1.,.5,1.), vec4(.0,-1.,.0,1.));
-        return d + (noise(p+vec3(.0,iGlobalTime*2.,.0)) + noise(p*3.)*.5)*.25*(p.y) ;
+        return fract(vec2(sin(p.x * 591.32 + p.y * 154.077), cos(p.x * 391.32 + p.y * 49.077)));
 }
 
-float scene(vec3 p)
+// 1D noise
+float noise1(float p)
 {
-        return min(100.-length(p) , abs(flame(p)) );
+        float fl = floor(p);
+        float fc = fract(p);
+        return mix(rand(fl), rand(fl + 1.0), fc);
 }
 
-vec4 raymarch(vec3 org, vec3 dir)
+// voronoi distance noise, based on iq's articles
+float voronoi(in vec2 x)
 {
-        float d = 0.0, glow = 0.0, eps = 0.02;
-        vec3  p = org;
-        bool glowed = false;
+        vec2 p = floor(x);
+        vec2 f = fract(x);
 
-        for(int i=0; i<64; i++)
+        vec2 res = vec2(8.0);
+        for(int j = -1; j <= 1; j ++)
         {
-                d = scene(p) + eps;
-                p += d * dir;
-                if( d>eps )
+                for(int i = -1; i <= 1; i ++)
                 {
-                        if(flame(p) < .0)
-                                glowed=true;
-                        if(glowed)
-                        glow = float(i)/64.;
+                        vec2 b = vec2(i, j);
+                        vec2 r = vec2(b) - f + rand2(p + b);
+
+                        // chebyshev distance, one of many ways to do this
+                        float d = max(abs(r.x), abs(r.y));
+
+                        if(d < res.x)
+                        {
+                                res.y = res.x;
+                                res.x = d;
+                        }
+                        else if(d < res.y)
+                        {
+                                res.y = d;
+                        }
                 }
         }
-        return vec4(p,glow);
+        return res.y - res.x;
 }
 
-void main()
+
+float flicker = noise1(iGlobalTime * 2.0) * 0.8 + 0.4;
+
+void main(void)
 {
-        vec2 v = -1.0 + 2.0 * gl_FragCoord.xy / iResolution.xy;
-        v.x *= iResolution.x/iResolution.y;
+        vec2 uv = gl_FragCoord.xy / iResolution.xy;
+        uv = (uv - 0.5) * 2.0;
+        vec2 suv = uv;
+        uv.x *= iResolution.x / iResolution.y;
 
-        vec3 org = vec3(0., -2., 4.);
-        vec3 dir = normalize(vec3(v.x*1.6, -v.y, -1.5));
 
-        vec4 p = raymarch(org, dir);
-        float glow = p.w;
+        float v = 0.0;
 
-        vec4 col = mix(vec4(1.,.5,.1,1.), vec4(0.1,.5,1.,1.), p.y*.02+.4);
+        // that looks highly interesting:
+        //v = 1.0 - length(uv) * 1.3;
 
-        gl_FragColor = mix(vec4(0.), col, pow(glow*2.,4.));
-        //gl_FragColor = mix(vec4(1.), mix(vec4(1.,.5,.1,1.),vec4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));
 
+        // a bit of camera movement
+        uv *= 0.6 + sin(iGlobalTime * 0.1) * 0.4;
+        uv = rotate(uv, sin(iGlobalTime * 0.3) * 1.0);
+        uv += iGlobalTime * 0.4;
+
+
+        // add some noise octaves
+        float a = 0.6, f = 1.0;
+
+        for(int i = 0; i < 3; i ++) // 4 octaves also look nice, its getting a bit slow though
+        {
+                float v1 = voronoi(uv * f + 5.0);
+                float v2 = 0.0;
+
+                // make the moving electrons-effect for higher octaves
+                if(i > 0)
+                {
+                        // of course everything based on voronoi
+                        v2 = voronoi(uv * f * 0.5 + 50.0 + iGlobalTime);
+
+                        float va = 0.0, vb = 0.0;
+                        va = 1.0 - smoothstep(0.0, 0.1, v1);
+                        vb = 1.0 - smoothstep(0.0, 0.08, v2);
+                        v += a * pow(va * (0.5 + vb), 2.0);
+                }
+
+                // make sharp edges
+                v1 = 1.0 - smoothstep(0.0, 0.3, v1);
+
+                // noise is used as intensity map
+                v2 = a * (noise1(v1 * 5.5 + 0.1));
+
+                // octave 0's intensity changes a bit
+                if(i == 0)
+                        v += v2 * flicker;
+                else
+                        v += v2;
+
+                f *= 3.0;
+                a *= 0.7;
+        }
+
+        // slight vignetting
+        v *= exp(-0.6 * length(suv)) * 1.2;
+
+        // use texture channel0 for color? why not.
+        vec3 cexp = vec3(1.0, 2.0, 4.0);//texture2D(iChannel0, uv * 0.001).xyz * 3.0 + texture2D(iChannel0, uv * 0.01).xyz;//vec3(1.0, 2.0, 4.0);
+        cexp *= 1.4;
+
+        // old blueish color set
+        //vec3 cexp = vec3(6.0, 4.0, 2.0);
+
+        vec3 col = vec3(pow(v, cexp.x), pow(v, cexp.y), pow(v, cexp.z)) * 2.0;
+
+        gl_FragColor = vec4(col, 1.0);
 }
-

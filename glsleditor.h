@@ -21,6 +21,7 @@ signals:
     void sendValueChanged(int position,QString mode);
 public slots:
     void getValueChangedInfo(int start,int end,float newValueFloat,int newValueInt,bool isInt);
+    void getCode(QString code);
 //    void cursorMoveHandle();
 
 private:
