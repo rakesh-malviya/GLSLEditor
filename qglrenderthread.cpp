@@ -22,12 +22,15 @@ QGLRenderThread::QGLRenderThread(QGLFrame *parent) :
     doRendering = true;
     doResize = false;
     FrameCounter=0;
+    timebase=0;
+
     timerCount =0;
     ShaderProgram = NULL;
     VertexShader = FragmentShader = NULL;
     constFind = NULL;
     intConstants = NULL;
     floatConstants = NULL;
+    FPS = "";
 }
 
 void QGLRenderThread::resizeViewport(const QSize &size)
@@ -67,7 +70,11 @@ void QGLRenderThread::run()
         glEnable(GL_LIGHT0);
         glEnable(GL_COLOR_MATERIAL);
         glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+        FPScounter();
+
         glLoadIdentity();
+
 
         paintGL(); // render actual frame
 
@@ -469,7 +476,17 @@ void QGLRenderThread::setUniformInt()
     }
 }
 
-
+void QGLRenderThread::FPScounter()
+{
+        FrameCounter++;
+        time=glutGet(GLUT_ELAPSED_TIME);
+        if (time - timebase > 1000) {
+            FPS = QString::number(FrameCounter*1000.0/(time-timebase),'f',2);
+            //sprintf(FPS,"FPS:%4.2f",FrameCounter*1000.0/(time-timebase));
+            timebase = time;
+            FrameCounter = 0;
+        }        
+}
 
 
 void QGLRenderThread::LoadShader(QString vshader, QString fshader)

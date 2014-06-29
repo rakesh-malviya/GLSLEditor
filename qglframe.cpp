@@ -42,6 +42,7 @@ void QGLFrame::resizeEvent(QResizeEvent *evt)
 void QGLFrame::paintEvent(QPaintEvent *)
 {
     // Do nothing. Let the thread do the work
+
 }
 
 void QGLFrame::closeEvent(QCloseEvent *evt)
@@ -75,6 +76,14 @@ void QGLFrame::getValueChanged(int position, QString mode)
         qDebug() << isInt << "  " << QString::number(newValueFloat,'f',2) << "  " << newValueInt;
         emit sendBackValueInfo(start,end,newValueFloat,newValueInt,isInt);
     }
+}
+
+void QGLFrame::getCodeChanged(QString newCode)
+{
+    this->code =  newCode;
+    stopRenderThread();
+    initRenderThread();
+    RenderThread.doRendering=true;
 }
 
 void QGLFrame::openFileDialog()
@@ -141,5 +150,6 @@ void QGLFrame::setXRotation(int angle)
  void QGLFrame::animate()
  {
     RenderThread.timerCount += 0.01;
+     emit sendFPS(RenderThread.FPS);
     //updateGL();
  }

@@ -17,6 +17,9 @@ public:
     
 private:
     Ui::MainWindow *ui;
+
+public slots:
+   void updateFPS(QString FPS);
 };
 
 #endif // MAINWINDOW_H

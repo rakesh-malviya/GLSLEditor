@@ -25,6 +25,7 @@ signals:
     void zRotationChanged(int angle);
     void sendBackValueInfo(int start,int end,float newValueFloat,int newValueInt,bool isInt);
     void sendCode(QString code);
+    void sendFPS(QString FPS);
 
 public slots:
    void prevModel();
@@ -34,6 +35,7 @@ public slots:
    void setZRotation(int angle);
    void handleCodeChange(QObject* glslwptr);
    void getValueChanged(int position,QString mode);
+   void getCodeChanged(QString newCode);
    void openFileDialog();
 
 

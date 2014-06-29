@@ -59,11 +59,12 @@ void GLSLEditor::keyPressEvent ( QKeyEvent * keyEvent )
     keysPressed+= keyEvent->key();
 
 
-    if(keysPressed.contains(Qt::Key_Control)&& keysPressed.contains(Qt::Key_Comma))
+
+    if(editor->isReadOnly()&&keysPressed.contains(Qt::Key_Control)&& keysPressed.contains(Qt::Key_Comma))
     {
         handleValueChange("DEC");
     }
-    else if(keysPressed.contains(Qt::Key_Control) && keysPressed.contains(Qt::Key_Period))
+    else if(editor->isReadOnly()&& keysPressed.contains(Qt::Key_Control) && keysPressed.contains(Qt::Key_Period))
     {
         handleValueChange("INC");
     }
@@ -165,4 +166,11 @@ void GLSLEditor::getValueChangedInfo(int start, int end, float newValueFloat, in
 void GLSLEditor::getCode(QString code)
 {
     editor->setPlainText(code);
+}
+
+void GLSLEditor::setEditable(bool isEditable)
+{
+    editor->setReadOnly(!isEditable);
+    if(!isEditable)
+        emit sendCodeChanged(editor->toPlainText());
 }

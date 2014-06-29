@@ -33,7 +33,7 @@ public:
     void updateFragShader(QString code);    
     int handleValueChanged(int position,QString mode,int* start,int* end, float* newValueFloat,int* newValueInt,bool* isInt);
     int findIndex(int position,bool* isInt);
-
+    QString FPS;
 protected:
     void GLInit(void);
     void GLResize(int width, int height);
@@ -49,7 +49,9 @@ private:
     void setUniformInt();
 
     bool  doResize;
-    int w, h, FrameCounter;
+    int w, h, FrameCounter,time,timebase;
+    void FPScounter();
+
     QString fShaderModified;
     QGLFrame *GLFrame;
 
