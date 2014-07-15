@@ -88,7 +88,7 @@ void QGLFrame::getCodeChanged(QString newCode)
 
 void QGLFrame::openFileDialog()
 {
-    QString filePath = QFileDialog::getOpenFileName(this,tr("Fragment Shader File"),"./",tr("Files (*.fsh)"));
+    QString filePath = QFileDialog::getOpenFileName(this,tr("Fragment Shader File"),"./../Shadertoy",tr("Files (*.fsh)"));
     qDebug()<<filePath;
     QFile fShaderFile(filePath);
 

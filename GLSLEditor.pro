@@ -6,7 +6,7 @@
 
 QT       += core gui opengl
 
-TARGET = DistanceField
+TARGET = GLSLEditor
 TEMPLATE = app
 LIBS += -lfreeglut
 

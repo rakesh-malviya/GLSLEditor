@@ -1,11 +1,10 @@
-
-
 #version 140
 
 uniform float timerCount;
 uniform int modelNo;
 
-vec2 iResolution = vec2(720f,480f);
+//vec2 iResolution = vec2(720f,480f);
+uniform vec2 iResolution;
 float iGlobalTime = timerCount;
 
 
