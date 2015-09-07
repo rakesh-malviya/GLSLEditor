@@ -111,7 +111,7 @@ void QGLRenderThread::paintGL(void)
     //qDebug()<<"PAinting";
     ShaderProgram->setUniformValue("timerCount",timerCount);
     ShaderProgram->setUniformValue("modelNo",model);
-    QVector2D Resolution(w,h);
+    QVector2D Resolution(   w,h);
     ShaderProgram->setUniformValue("iResolution",Resolution);
 
     setUniformInt();
